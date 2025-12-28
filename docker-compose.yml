@@ -58,7 +58,27 @@ services:
 	      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/ecommerce
 	      SPRING_DATASOURCE_USERNAME: prasad
 	      SPRING_DATASOURCE_PASSWORD: root
-	    depends_on: [postgres]
+		  depends_on:
+		       postgres:
+		         condition: service_healthy
+		     restart: unless-stopped
+
+		
+	#Delivery Service (Port 8084)
+		
+	delivery-service:             
+		    build: .
+		    ports: - "8084:8084"
+		    environment:
+		      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/ecommerce
+		      SPRING_DATASOURCE_USERNAME: prasad
+		      SPRING_DATASOURCE_PASSWORD: root
+			  depends_on:
+			       postgres:
+			         condition: service_healthy
+			     restart: unless-stopped
+
+
 
   # API Gateway (Port 8080)
   gateway-service:
@@ -67,8 +87,10 @@ services:
     ports:
       - "8080:8080"
     depends_on:
-      - order-service
-      - inventory-service
+		- order-service
+	    - inventory-service
+	    - payment-service
+	    - delivery-service
     restart: unless-stopped
 
 volumes:
