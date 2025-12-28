@@ -12,8 +12,8 @@
     <name>Prasad Ecommerce Platform</name>
     
     <modules>
-        <module>order-service
-        </module>
+        <module>order-service</module>
+        <module>inventory-service</module>
         </modules>
    
     <properties>
