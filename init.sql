@@ -1,5 +1,14 @@
--- Products Table
-CREATE TABLE IF NOT EXISTS products (
+CREATE TABLE orders (
+    id BIGSERIAL PRIMARY KEY,
+    order_number VARCHAR(50) UNIQUE NOT NULL,
+    customer_name VARCHAR(100) NOT NULL,
+    total_amount DECIMAL(12,2) NOT NULL,
+    status VARCHAR(20) NOT NULL, -- PENDING, PAID, CONFIRMED, SHIPPED, DELIVERED
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE products (
     id BIGSERIAL PRIMARY KEY,
     product_code VARCHAR(20) UNIQUE NOT NULL,
     name VARCHAR(100) NOT NULL,
@@ -7,19 +16,36 @@ CREATE TABLE IF NOT EXISTS products (
     price DECIMAL(12,2) NOT NULL,
     stock_quantity INTEGER NOT NULL DEFAULT 0
 );
-
--- Orders Table
-CREATE TABLE IF NOT EXISTS orders (
+CREATE TABLE payments (
     id BIGSERIAL PRIMARY KEY,
-    order_number VARCHAR(50) UNIQUE NOT NULL,
-    customer_name VARCHAR(100) NOT NULL,
-    total_amount DECIMAL(12,2) NOT NULL,
-    status VARCHAR(20) NOT NULL DEFAULT 'PENDING',
-    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    receipt_id VARCHAR(50) UNIQUE NOT NULL,
+    order_id BIGINT NOT NULL REFERENCES orders(id), -- FK to ORDERS
+    amount DECIMAL(12,2) NOT NULL,
+    payment_method VARCHAR(10) NOT NULL, -- UPI, CASH
+    upi_qr_data TEXT, -- "orderId:1:amount:95000"
+    payment_date TIMESTAMP NOT NULL DEFAULT NOW(),
+    status VARCHAR(20) NOT NULL DEFAULT 'COMPLETED'
+);
+
+CREATE TABLE delivery_assignments (
+    id BIGSERIAL PRIMARY KEY,
+    order_id BIGINT NOT NULL REFERENCES orders(id), -- FK to ORDERS
+    receipt_id VARCHAR(50) NOT NULL REFERENCES payments(receipt_id), -- FK to PAYMENTS
+    delivery_person VARCHAR(100) NOT NULL,
+    status VARCHAR(20) NOT NULL DEFAULT 'ASSIGNED', -- ASSIGNED, IN_TRANSIT, DELIVERED, FAILED
+    assigned_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE delivery_status (
+    id BIGSERIAL PRIMARY KEY,
+    order_id BIGINT NOT NULL REFERENCES orders(id), -- FK to ORDERS
+    receipt_id VARCHAR(50) NOT NULL REFERENCES payments(receipt_id), -- FK to PAYMENTS
+    status VARCHAR(20) NOT NULL, -- COMPLETE, INCOMPLETE
+    notes TEXT, -- "Delivered flat 301", "Customer absent"
     updated_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
--- 25 DUMMY PRODUCTS (Realistic E-Commerce Catalog)
+
 INSERT INTO products (product_code, name, description, price, stock_quantity) 
 VALUES 
 
