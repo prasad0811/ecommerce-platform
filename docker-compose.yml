@@ -8,7 +8,7 @@ services:
     environment:
       POSTGRES_DB: ecommerce
       POSTGRES_USER: prasad
-      POSTGRES_PASSWORD: root
+      POSTGRES_PASSWORD: password
     ports:
       - "5432:5432"
     volumes:
@@ -29,13 +29,13 @@ services:
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/ecommerce
       SPRING_DATASOURCE_USERNAME: prasad
-      SPRING_DATASOURCE_PASSWORD: root
+      SPRING_DATASOURCE_PASSWORD: password
     depends_on:
       postgres:
         condition: service_healthy
     restart: unless-stopped
 
-  # Inventory Service (Port 8082)  
+  # Inventory Service (Port 8082)
   inventory-service:
     build: ./inventory-service
     container_name: inventory-service
@@ -44,41 +44,56 @@ services:
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/ecommerce
       SPRING_DATASOURCE_USERNAME: prasad
-      SPRING_DATASOURCE_PASSWORD: root
+      SPRING_DATASOURCE_PASSWORD: password
     depends_on:
       postgres:
         condition: service_healthy
     restart: unless-stopped
-	
-	# Payment Service (Port 8083)
-	payment-service:              
-	    build: ./payment-service
-	    ports: - "8083:8083"
-	    environment:
-	      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/ecommerce
-	      SPRING_DATASOURCE_USERNAME: prasad
-	      SPRING_DATASOURCE_PASSWORD: root
-		  depends_on:
-		       postgres:
-		         condition: service_healthy
-		     restart: unless-stopped
 
-		
-	#Delivery Service (Port 8084)
-		
-	delivery-service:             
-		    build: .
-		    ports: - "8084:8084"
-		    environment:
-		      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/ecommerce
-		      SPRING_DATASOURCE_USERNAME: prasad
-		      SPRING_DATASOURCE_PASSWORD: root
-			  depends_on:
-			       postgres:
-			         condition: service_healthy
-			     restart: unless-stopped
+  # Payment Service (Port 8083) 
+  payment-service:
+    build: ./payment-service
+    container_name: payment-service
+    ports:
+      - "8083:8083"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/ecommerce
+      SPRING_DATASOURCE_USERNAME: prasad
+      SPRING_DATASOURCE_PASSWORD: password
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
 
+  # Delivery Service (Port 8084) 
+  delivery-service:
+    build: ./delivery-service
+    container_name: delivery-service
+    ports:
+      - "8084:8084"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/ecommerce
+      SPRING_DATASOURCE_USERNAME: prasad
+      SPRING_DATASOURCE_PASSWORD: password
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
 
+  # Delivered Service (Port 8085) 
+  delivered-service:
+    build: ./delivered-service
+    container_name: delivered-service
+    ports:
+      - "8085:8085"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/ecommerce
+      SPRING_DATASOURCE_USERNAME: prasad
+      SPRING_DATASOURCE_PASSWORD: password
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
 
   # API Gateway (Port 8080)
   gateway-service:
@@ -87,10 +102,11 @@ services:
     ports:
       - "8080:8080"
     depends_on:
-		- order-service
-	    - inventory-service
-	    - payment-service
-	    - delivery-service
+      - order-service
+      - inventory-service
+      - payment-service
+      - delivery-service
+      - delivered-service
     restart: unless-stopped
 
 volumes:
